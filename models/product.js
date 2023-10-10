@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const db =require("../util/database")
 
 const p = path.join(
   path.dirname(process.mainModule.filename),
@@ -19,7 +20,7 @@ const getProductsFromFile = cb => {
 
 module.exports = class Product {
   constructor(title, imageUrl, description, price) {
-    this.id=Math.random().toString();
+    
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
@@ -27,25 +28,22 @@ module.exports = class Product {
   }
 
   save() {
-    
-    getProductsFromFile(products => {
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
-    });
+    return db.execute('insert into product(`title`,`price`,`desc`,`image`) values(?,?,?,?)',
+    [this.title,this.price,this.description,this.imageUrl])
   }
 
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
+  static fetchAll() {
+    return db.execute("select * from product");
   }
 
-  static findById(id, callb){
-    getProductsFromFile(products=>{
-      const product=products.find(p=>p.id===id);
-      callb(product);
-    });
+  static findById(id){
+    return db.execute("select * from product where id=?",[id])
   }
+
+  static deleteById(id){
+    return db.execute("delete from product where id=?",[id])
+  }
+  
 
 
 };
